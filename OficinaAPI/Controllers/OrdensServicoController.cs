@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using OficinaAPI.Data;
 using OficinaAPI.Models;
 
@@ -22,17 +23,17 @@ namespace OficinaAPI.Controllers
 
         // GET: api/<OrdensServicoController>
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IActionResult> Get()
         {
-            var ordens = _context.OrdensServico.ToList();
+            var ordens = await _context.OrdensServico.ToListAsync();
             return Ok(ordens);
         }
 
         // GET api/<OrdensServicoController>/5
         [HttpGet("{id}")]
-        public IActionResult Get([FromRoute] int id)
+        public async Task<IActionResult> Get([FromRoute] int id)
         {
-            var ordem = _context.OrdensServico.FirstOrDefault(o => o.Id == id);
+            var ordem = await _context.OrdensServico.FirstOrDefaultAsync(o => o.Id == id);
             if (ordem == null)
             {
                 return NotFound("Ordem de serviço não encontrada!");
@@ -42,7 +43,7 @@ namespace OficinaAPI.Controllers
 
         // POST api/<OrdensServicoController>
         [HttpPost]
-        public IActionResult Post([FromBody] OrdemServico novaOrdem)
+        public async Task<IActionResult> Post([FromBody] OrdemServico novaOrdem)
         {
             if(novaOrdem == null)
             {
@@ -51,17 +52,17 @@ namespace OficinaAPI.Controllers
             var ordem = _mapper.Map<OrdemServico>(novaOrdem);
             ordem.Status = "Aberto";
             ordem.DataAbertura = DateTime.Now;
-            _context.OrdensServico.Add(ordem);
-            _context.SaveChanges();
+            await _context.OrdensServico.AddAsync(ordem);
+            await _context.SaveChangesAsync();
 
             return Created("/ordensservico", ordem);
         }
 
         // PUT api/<OrdensServicoController>/5
         [HttpPut("{id}")]
-        public IActionResult Put([FromRoute] int id)
+        public async Task<IActionResult> Put([FromRoute] int id)
         {
-            var ordem = _context.OrdensServico.FirstOrDefault(o => o.Id == id);
+            var ordem = await _context.OrdensServico.FirstOrDefaultAsync(o => o.Id == id);
             if(ordem == null)
             {
                 return BadRequest("Ordem de serviço não encontrada!");
@@ -69,22 +70,22 @@ namespace OficinaAPI.Controllers
             ordem.Status = "Fechada";
             ordem.DataFechamento = DateTime.Now;
             _context.Update(ordem);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return Ok("Ordem de serviço atualizada com sucesso!");
         }
 
         // DELETE api/<OrdensServicoController>/5
         [HttpDelete("{id}")]
-        public IActionResult Delete([FromRoute] int id)
+        public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            var ordem = _context.OrdensServico.FirstOrDefault(o => o.Id ==id);
+            var ordem = await _context.OrdensServico.FirstOrDefaultAsync(o => o.Id ==id);
             if(ordem == null)
             {
                 return BadRequest("Ordem de serviço não encontrada!");
             }
             _context.Remove(ordem);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return Ok("Ordem de serviço removida com sucesso!");
         }
     }

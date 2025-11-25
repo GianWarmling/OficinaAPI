@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using OficinaAPI.Data;
 using OficinaAPI.Models;
 using OficinaAPI.Models.DTO;
@@ -23,17 +24,17 @@ namespace OficinaAPI.Controllers
 
         // GET: api/<ProdutosController>
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IActionResult> Get()
         {
-            var produtos = _context.Produtos.ToList();
+            var produtos = await _context.Produtos.ToListAsync();
             return Ok(produtos);
         }
 
         // GET api/<ProdutosController>/5
         [HttpGet("{id}")]
-        public IActionResult GetById([FromRoute] int id)
+        public async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var produto = _context.Produtos.FirstOrDefault(p => p.Id == id);
+            var produto = await _context.Produtos.FirstOrDefaultAsync(p => p.Id == id);
 
             if (produto == null)
             {
@@ -44,19 +45,19 @@ namespace OficinaAPI.Controllers
 
         // POST api/<ProdutosController>
         [HttpPost]
-        public IActionResult Post([FromBody] ProdutoDTO novoProduto)
+        public async Task<IActionResult> Post([FromBody] ProdutoDTO novoProduto)
         {
             var produto = _mapper.Map<Produto>(novoProduto);
-            _context.Produtos.Add(produto);
-            _context.SaveChanges();
+            await _context.Produtos.AddAsync(produto);
+            await _context.SaveChangesAsync();
             return Created("/produtos", produto);
         }
 
         // PUT api/<ProdutosController>/5
         [HttpPut("{id}")]
-        public IActionResult Put([FromRoute] int id, [FromBody] ProdutoDTO produtoAtualizado)
+        public async Task<IActionResult> Put([FromRoute] int id, [FromBody] ProdutoDTO produtoAtualizado)
         {
-            var produto = _context.Produtos.FirstOrDefault(p => p.Id == id);
+            var produto = await _context.Produtos.FirstOrDefaultAsync(p => p.Id == id);
 
             if(produto == null)
             {
@@ -64,22 +65,22 @@ namespace OficinaAPI.Controllers
             }
             _mapper.Map(produtoAtualizado, produto);
             _context.Update(produto);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return Ok("Produto atualizado com sucesso!");
         }
 
         // DELETE api/<ProdutosController>/5
         [HttpDelete("{id}")]
-        public IActionResult Delete([FromRoute] int id)
+        public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            var produto = _context.Produtos.FirstOrDefault(p => p.Id == id);
+            var produto = await _context.Produtos.FirstOrDefaultAsync(p => p.Id == id);
 
             if (produto == null) 
             {
                 return BadRequest("Produto não encontrado!");
             }
             _context.Remove(produto);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return Ok("Produto removido com sucesso!");
         }
     }

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using OficinaAPI.Data;
 using OficinaAPI.Models;
 using OficinaAPI.Models.DTO;
@@ -23,17 +24,17 @@ namespace OficinaAPI.Controllers
 
         // GET: api/<ServicosController>
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IActionResult> Get()
         {
-            var servicos = _context.Servicos.ToList();
+            var servicos = await _context.Servicos.ToListAsync();
             return Ok(servicos);
         }
 
         // GET api/<ServicosController>/5
         [HttpGet("{id}")]
-        public IActionResult Get([FromRoute] int id)
+        public async Task<IActionResult> Get([FromRoute] int id)
         {
-            var servico = _context.Servicos.FirstOrDefault(s => s.Id == id);
+            var servico = await _context.Servicos.FirstOrDefaultAsync(s => s.Id == id);
             if (servico == null)
             {
                 return NotFound("Serviço não encontrado!");
@@ -43,40 +44,40 @@ namespace OficinaAPI.Controllers
 
         // POST api/<ServicosController>
         [HttpPost]
-        public IActionResult Post([FromBody] ServicoDTO novoServico)
+        public async Task<IActionResult> Post([FromBody] ServicoDTO novoServico)
         {
             var servico = _mapper.Map<Servico>(novoServico);
-            _context.Servicos.Add(servico);
-            _context.SaveChanges();
+            await _context.Servicos.AddAsync(servico);
+            await _context.SaveChangesAsync();
             return Created("/servicos", servico);
         }
 
         // PUT api/<ServicosController>/5
         [HttpPut("{id}")]
-        public IActionResult Put([FromRoute]int id, [FromBody] ServicoDTO servicoAtualizado)
+        public async Task<IActionResult> Put([FromRoute]int id, [FromBody] ServicoDTO servicoAtualizado)
         {
-            var servico = _context.Servicos.FirstOrDefault(s => s.Id == id);
+            var servico = await _context.Servicos.FirstOrDefaultAsync(s => s.Id == id);
             if(servico == null)
             {
                 return BadRequest("Serviço não encontrado!");
             }
             _mapper.Map(servicoAtualizado, servico);
             _context.Update(servico);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return Ok("Serviço atualizado com sucesso!");
         }
 
         // DELETE api/<ServicosController>/5
         [HttpDelete("{id}")]
-        public IActionResult Delete([FromRoute] int id)
+        public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            var servico = _context.Servicos.FirstOrDefault(s => s.Id == id);
+            var servico = await _context.Servicos.FirstOrDefaultAsync(s => s.Id == id);
             if (servico == null)
             {
                 return BadRequest("Serviõ não encontrado!");
             }
             _context.Remove(servico);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return Ok("Serviço removido com sucesso!");
         }
     }

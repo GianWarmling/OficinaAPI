@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using OficinaAPI.Data;
 using OficinaAPI.Models;
 using OficinaAPI.Models.DTO;
@@ -23,17 +24,19 @@ namespace OficinaAPI.Controllers
 
         // GET: api/<VeiculosController>
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IActionResult> Get()
         {
-            var veiculos = _context.Veiculos.ToList();
+            var veiculos = await _context.Veiculos.ToListAsync();
             return Ok(veiculos);
         }
 
         // GET api/<VeiculosController>/5
         [HttpGet("{id}")]
-        public IActionResult GetById([FromRoute] int id)
+        public async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var veiculo = _context.Veiculos.FirstOrDefault(v => v.Id == id);
+            var veiculo = await _context.Veiculos
+                .Include(v => v.Cliente)
+                .FirstOrDefaultAsync(v => v.Id == id);
             if (veiculo == null)
             {
                 return NotFound("Veículo não encontrado!");
@@ -43,40 +46,45 @@ namespace OficinaAPI.Controllers
 
         // POST api/<VeiculosController>
         [HttpPost]
-        public IActionResult Post([FromBody] VeiculoDTO novoVeiculo)
+        public async Task<IActionResult> Post([FromBody] VeiculoDTO novoVeiculo)
         {
+            if (novoVeiculo == null)
+            {
+                return BadRequest("Dados Inválidos!");
+            }
+
             var veiculo = _mapper.Map<Veiculo>(novoVeiculo);
-            _context.Veiculos.Add(veiculo);
-            _context.SaveChanges();
+            await _context.Veiculos.AddAsync(veiculo);
+            await _context.SaveChangesAsync();
             return Created("/veiculos", veiculo);
         }
 
         // PUT api/<VeiculosController>/5
         [HttpPut("{id}")]
-        public IActionResult Put([FromRoute] int id, [FromBody] VeiculoDTO veiculoAtualizado)
+        public async Task<IActionResult> Put([FromRoute] int id, [FromBody] VeiculoDTO veiculoAtualizado)
         {
-            var veiculo = _context.Veiculos.FirstOrDefault(v => v.Id == id);
+            var veiculo = await _context.Veiculos.FirstOrDefaultAsync(v => v.Id == id);
             if (veiculo == null)
             {
                 return BadRequest("Veículo não existe!");
             }
             _mapper.Map(veiculoAtualizado, veiculo);
             _context.Update(veiculo);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return Ok("Veículo atualizado com sucesso!");
         }
 
         // DELETE api/<VeiculosController>/5
         [HttpDelete("{id}")]
-        public IActionResult Delete([FromRoute] int id)
+        public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            var veiculo = _context.Veiculos.FirstOrDefault(v => v.Id == id);
+            var veiculo = await _context.Veiculos.FirstOrDefaultAsync(v => v.Id == id);
             if (veiculo == null)
             {
                 return BadRequest("Veículo não existe!");
             }
             _context.Remove(veiculo);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return Ok("Veículo removido com sucesso!");
         }
     }
